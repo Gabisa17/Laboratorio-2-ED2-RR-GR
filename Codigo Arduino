@@ -1,0 +1,262 @@
+// Importación de Librerías
+#include <Arduino.h>
+
+
+// Definiciones botones/leds
+#define boton1 2
+#define boton2 5
+#define boton3 21
+#define led1 13
+#define led2 14
+#define led3 26
+#define led4 25
+
+
+// Definición de tiempos de anti-rebote
+const unsigned long debounceDelay = 50; // Tiempo de anti-rebote en milisegundos
+unsigned long lastButton1Press = 0;
+unsigned long lastButton2Press = 0;
+unsigned long lastButton3Press = 0;
+
+
+// Definición variables
+int modo;
+int estadomodo;
+int mas;
+int menos;
+uint8_t contador;
+
+
+// Función de configuración
+void setup() {
+  // Configuración de LEDs
+  pinMode(led1, OUTPUT);
+  pinMode(led2, OUTPUT);
+  pinMode(led3, OUTPUT);
+  pinMode(led4, OUTPUT);
+
+
+  // Configuración de botones
+  pinMode(boton1, INPUT_PULLDOWN);   // Botón con resistencia interna pull-up
+  pinMode(boton2, INPUT_PULLUP); // Botón con resistencia interna pull-down
+  pinMode(boton3, INPUT); // Botón con resistencia externa (configuración pull-up)
+
+
+  digitalWrite(led1, LOW);
+  digitalWrite(led2, LOW);
+  digitalWrite(led3, LOW);
+  digitalWrite(led1, LOW);
+  digitalWrite(boton1, LOW);
+  digitalWrite(boton2, LOW);
+  digitalWrite(boton3, LOW);
+}
+
+
+// Función principal del bucle
+void loop() {
+  unsigned long currentTime = millis();
+  int currentButton1State = digitalRead(boton1);
+  int currentButton2State = digitalRead(boton2);
+  int currentButton3State = digitalRead(boton3);
+
+
+  // Anti-rebote para botón modo (boton1)
+  if (currentButton1State == LOW && (currentTime - lastButton1Press) > debounceDelay) {
+    lastButton1Press = currentTime;
+    modo = !modo; // Alterna entre los modos 0 y 1
+  }
+
+
+  // Anti-rebote para botón suma (boton2)
+  if (currentButton2State == LOW && (currentTime - lastButton2Press) > debounceDelay) {
+    lastButton2Press = currentTime;
+    contador++;
+    if (modo == 1) {
+      if (contador > 4) { // Límite de 4 en modo binario
+        contador = 0;
+      }
+    }
+  }
+
+
+  // Anti-rebote para botón resta (boton3)
+  if (currentButton3State == LOW && (currentTime - lastButton3Press) > debounceDelay) {
+    lastButton3Press = currentTime;
+    contador--;
+    if (contador < 0) {
+      contador = 0; // Evita que el contador sea negativo
+    }
+  }
+
+
+  // Estado botones
+  estadomodo = digitalRead(boton1);
+  mas = digitalRead(boton2);
+  menos = digitalRead(boton3);
+
+
+  // Botón modo
+  if (estadomodo == 1) {
+    modo = !modo;
+  }
+
+
+  // Botones suma / resta
+  if (mas == HIGH) { // Sumador que indica sobre el botón
+    contador++;
+    if (modo == 1) {
+      if (contador > 4) {
+        contador = 0;
+      }
+    }
+    else {
+      if (contador > 15){
+        contador = 0;
+      }
+    }
+  }
+  if (menos == HIGH) { // Descripción resta
+    contador--;
+    if (contador < 0) {
+      contador = 0; // Evita que el contador sea negativo
+    }
+  }
+
+
+  // Modo binario
+  if (modo == 0) {
+    switch (contador) {
+      case 0:
+        digitalWrite(led1, LOW);
+        digitalWrite(led2, LOW);
+        digitalWrite(led3, LOW);
+        digitalWrite(led4, LOW);
+        break;
+      case 1:
+        digitalWrite(led1, HIGH);
+        digitalWrite(led2, LOW);
+        digitalWrite(led3, LOW);
+        digitalWrite(led4, LOW);
+        break;
+      case 2:
+        digitalWrite(led1, LOW);
+        digitalWrite(led2, HIGH);
+        digitalWrite(led3, LOW);
+        digitalWrite(led4, LOW);
+        break;
+      case 3:
+        digitalWrite(led1, HIGH);
+        digitalWrite(led2, HIGH);
+        digitalWrite(led3, LOW);
+        digitalWrite(led4, LOW);
+        break;
+      case 4:
+        digitalWrite(led1, LOW);
+        digitalWrite(led2, LOW);
+        digitalWrite(led3, HIGH);
+        digitalWrite(led4, LOW);
+        break;
+      case 5:
+        digitalWrite(led1, HIGH);
+        digitalWrite(led2, LOW);
+        digitalWrite(led3, HIGH);
+        digitalWrite(led4, LOW);
+        break;
+      case 6:
+        digitalWrite(led1, LOW);
+        digitalWrite(led2, HIGH);
+        digitalWrite(led3, HIGH);
+        digitalWrite(led4, LOW);
+        break;
+      case 7:
+        digitalWrite(led1, HIGH);
+        digitalWrite(led2, HIGH);
+        digitalWrite(led3, HIGH);
+        digitalWrite(led4, LOW);
+        break;
+      case 8:
+        digitalWrite(led1, LOW);
+        digitalWrite(led2, LOW);
+        digitalWrite(led3, LOW);
+        digitalWrite(led4, HIGH);
+        break;
+      case 9:
+        digitalWrite(led1, HIGH);
+        digitalWrite(led2, LOW);
+        digitalWrite(led3, LOW);
+        digitalWrite(led4, HIGH);
+        break;
+      case 10:
+        digitalWrite(led1, LOW);
+        digitalWrite(led2, HIGH);
+        digitalWrite(led3, LOW);
+        digitalWrite(led4, HIGH);
+        break;
+      case 11:
+        digitalWrite(led1, HIGH);
+        digitalWrite(led2, HIGH);
+        digitalWrite(led3, LOW);
+        digitalWrite(led4, HIGH);
+        break;
+      case 12:
+        digitalWrite(led1, LOW);
+        digitalWrite(led2, LOW);
+        digitalWrite(led3, HIGH);
+        digitalWrite(led4, HIGH);
+        break;
+      case 13:
+        digitalWrite(led1, HIGH);
+        digitalWrite(led2, LOW);
+        digitalWrite(led3, HIGH);
+        digitalWrite(led4, HIGH);
+        break;
+      case 14:
+        digitalWrite(led1, LOW);
+        digitalWrite(led2, HIGH);
+        digitalWrite(led3, HIGH);
+        digitalWrite(led4, HIGH);
+        break;
+      case 15:
+        digitalWrite(led1, HIGH);
+        digitalWrite(led2, HIGH);
+        digitalWrite(led3, HIGH);
+        digitalWrite(led4, HIGH);
+        break;
+    }
+  }
+  // Modo decimal
+  else {
+    switch (contador) {
+      case 0:
+        digitalWrite(led1, LOW);
+        digitalWrite(led2, LOW);
+        digitalWrite(led3, LOW);
+        digitalWrite(led4, LOW);
+        break;
+      case 1:
+        digitalWrite(led1, HIGH);
+        digitalWrite(led2, LOW);
+        digitalWrite(led3, LOW);
+        digitalWrite(led4, LOW);
+        break;
+      case 2:
+        digitalWrite(led1, LOW);
+        digitalWrite(led2, HIGH);
+        digitalWrite(led3, LOW);
+        digitalWrite(led4, LOW);
+        break;
+      case 3:
+        digitalWrite(led1, LOW);
+        digitalWrite(led2, LOW);
+        digitalWrite(led3, HIGH);
+        digitalWrite(led4, LOW);
+        break;
+      case 4:
+        digitalWrite(led1, LOW);
+        digitalWrite(led2, LOW);
+        digitalWrite(led3, LOW);
+        digitalWrite(led4, HIGH);
+        break;
+    }
+  }
+}
